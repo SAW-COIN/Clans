@@ -17,7 +17,7 @@ const uiElements = {
 
 // متغيرات اللعبة
 let score = 0;
-let timeLeft = 90;
+let timeLeft = 10;
 let gameOver = false;
 let activeTouches = false;
 let gameState = {
@@ -156,7 +156,7 @@ function displayDailyTimer(seconds) {
 // بدء اللعبة
 function startGame() {
   score = 0;
-  timeLeft = 90;
+  timeLeft = 10;
   gameOver = false;
   updateUI();
 
