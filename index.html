@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Killing game</title>
+    <title>Killing Game</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
@@ -14,20 +14,20 @@
         <div class="dot"></div>
         <div class="dot"></div>
     </div>
-    
+
     <!-- واجهة المستخدم -->
     <div class="container">
         <!-- بيانات المستخدم -->
         <div id="game-user">
             <div class="user-name" style="display:none;">
-                <div class="user-name"><span id="userTelegramName">Username</span></div>
-                <div class="user-id"><span id="userTelegramId">123456</span></div>
-            </div>        
+                <div><span id="userTelegramName">Username</span></div>
+                <div><span id="userTelegramId">123456</span></div>
+            </div>
 
             <!-- منطقة اللعبة -->
             <div id="gameArea">
                 <div id="game-bar">
-                    <div id="score"> </div>
+                    <div id="score"></div>
                     <div id="timer">00</div>
                 </div>
             </div>
@@ -46,7 +46,11 @@
 
     <!-- إشعارات -->
     <div id="notification" class="notification top-notification"></div>
+    <div id="overlay" style="display: none;">
+        <div id="dailyTimer"></div>
+    </div>
 
     <script type="module" src="script.js"></script>
 </body>
 </html>
+
