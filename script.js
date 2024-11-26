@@ -64,7 +64,6 @@ function collectItemEffect(element) {
   element.style.opacity = '0';
 }
 
-
 // جلب بيانات المستخدم من Telegram
 async function fetchUserDataFromTelegram() {
   const telegramApp = window.Telegram.WebApp;
@@ -176,14 +175,10 @@ function startGame() {
         endGame();
       }
     }
-   1000);
-  // بدء إنشاء العناصر بشكل مكثف
-  setTimeout(() => createRandomItem(), 200);
-} 
+  }, 1000);
 
-  setInterval(() => {
-    if (!gameOver) createRandomItem();
-  }, 200);
+  // بدء إنشاء العناصر المتساقطة
+  setTimeout(() => createRandomItem(), 200);
 }
 
 // إنهاء اللعبة
@@ -209,22 +204,22 @@ async function endGame() {
 }
 
 // إنشاء عنصر متساقط عشوائي
-// زيادة العناصر المتساقطة تدريجيًا
 function createRandomItem() {
   const item = document.createElement('div');
   item.classList.add('fallingItem');
   item.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
   item.style.top = '-50px';
 
-  // إضافة شكل العنصر وتأثيراته
+  // تصميم العنصر
   item.style.width = '40px';
   item.style.height = '40px';
-  item.style.background = 'radial-gradient(circle, #FFD700, #FFA500)'; // تأثير ذهبي
-  item.style.borderRadius = '50%'; // جعل العنصر دائريًا
+  item.style.background = 'radial-gradient(circle, #FFD700, #FFA500)';
+  item.style.borderRadius = '50%';
   item.style.position = 'absolute';
+
   document.body.appendChild(item);
 
-  let falling = setInterval(() => {
+  const falling = setInterval(() => {
     if (!gameOver) {
       item.style.top = `${item.offsetTop + 5}px`;
       if (item.offsetTop > window.innerHeight - 10) {
@@ -234,16 +229,15 @@ function createRandomItem() {
     }
   }, 30);
 
-  // إضافة معدل تساقط أعلى تدريجيًا
   setTimeout(() => {
     if (!gameOver) createRandomItem();
-  }, Math.max(500 - timeLeft * 5, 100)); // تقليل الفارق الزمني مع الوقت
+  }, Math.max(500 - timeLeft * 5, 100));
 }
 
 // تحديث واجهة المستخدم
 function updateUI() {
   uiElements.scoreDisplay.innerText = `${score}`;
-  uiElements.timerDisplay.innerText = `00 : ${timeLeft}`;
+  uiElements.timerDisplay.innerText = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
 }
 
 // بدء اللعبة عند الضغط على الزر
@@ -251,9 +245,6 @@ uiElements.startButton.addEventListener('click', startGame);
 
 // تحميل البيانات عند فتح الصفحة
 window.onload = fetchUserDataFromTelegram;
-
-
-
 
 
 
