@@ -217,7 +217,7 @@ function createRandomItem() {
   // تصميم العنصر مع صورة في المنتصف
   item.style.width = '40px';
   item.style.height = '40px';
-  item.style.background = 'radial-gradient(circle, #000, #fff)';
+  item.style.background = '#fff';
   item.style.borderRadius = '50%';
   item.style.position = 'absolute';
 
@@ -227,7 +227,7 @@ function createRandomItem() {
   img.style.height = '70%';
   img.style.position = 'absolute';
   img.style.top = '20%';
-  img.style.left = '20%';
+  img.style.left = '10%';
 
   item.appendChild(img);
   document.body.appendChild(item);
