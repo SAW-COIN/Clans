@@ -43,25 +43,19 @@ function handleSwipe(event) {
   const x = touch.clientX;
   const y = touch.clientY;
 
-  // تحديد العناصر التي تتلامس مع مسار السحب
   const elements = document.elementsFromPoint(x, y);
 
   elements.forEach((el) => {
     if (el.classList.contains('fallingItem')) {
-      // إضافة تأثير جمالي قبل الإزالة
       collectItemEffect(el);
-
-      // إزالة العنصر بعد التأثير
       setTimeout(() => el.remove(), 300);
-
-      // تحديث النقاط
       score++;
       updateUI();
     }
   });
 }
 
-// تأثير الجمع (تصغير واختفاء)
+// تأثير الجمع
 function collectItemEffect(element) {
   element.style.transition = 'transform 0.3s, opacity 0.3s';
   element.style.transform = 'scale(0)';
@@ -116,14 +110,18 @@ async function registerNewUser(telegramId) {
 
 // تحقق من إمكانية اللعب اليوم
 function checkDailyPlayAccess() {
-  const today = new Date().setHours(0, 0, 0, 0);
-  const lastPlay = new Date(gameState.lastPlayDate || 0).setHours(0, 0, 0, 0);
+  const now = new Date();
+  const lastPlayDate = new Date(gameState.lastPlayDate || 0);
+  const timeDiff = now - lastPlayDate;
 
-  if (today > lastPlay) {
+  if (timeDiff >= 24 * 60 * 60 * 1000) {
+    // مر يوم جديد
     uiElements.startButton.style.display = 'block';
+    uiElements.startButton.innerText = 'ابدأ اللعب';
     uiElements.overlay.style.display = 'none';
   } else {
-    const timeRemaining = calculateTimeToNextDay();
+    // لم يمر يوم جديد
+    const timeRemaining = Math.floor((24 * 60 * 60 * 1000 - timeDiff) / 1000);
     displayDailyTimer(timeRemaining);
   }
 }
@@ -131,9 +129,9 @@ function checkDailyPlayAccess() {
 // حساب الوقت المتبقي لليوم التالي
 function calculateTimeToNextDay() {
   const now = new Date();
-  const nextDay = new Date();
-  nextDay.setHours(24, 0, 0, 0);
-  return Math.floor((nextDay - now) / 1000);
+  const lastPlayDate = new Date(gameState.lastPlayDate || 0);
+  const nextPlayTime = new Date(lastPlayDate.getTime() + 24 * 60 * 60 * 1000);
+  return Math.floor((nextPlayTime - now) / 1000);
 }
 
 // عرض المؤقت اليومي
@@ -146,7 +144,7 @@ function displayDailyTimer(seconds) {
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
 
-    uiElements.dailyTimer.innerText = ` ${hours}h ${minutes}m ${secs}s`;
+    uiElements.dailyTimer.innerText = `الوقت المتبقي: ${hours} ساعة ${minutes} دقيقة ${secs} ثانية`;
 
     if (seconds > 0) {
       seconds--;
@@ -168,7 +166,6 @@ function startGame() {
   uiElements.startButton.style.display = 'none';
   uiElements.retryButton.style.display = 'none';
 
-  // تشغيل المؤقت
   const gameTimer = setInterval(() => {
     if (gameOver) {
       clearInterval(gameTimer);
@@ -182,7 +179,6 @@ function startGame() {
     }
   }, 1000);
 
-  // بدء إنشاء العناصر المتساقطة
   createRandomItem();
 }
 
@@ -217,20 +213,10 @@ function createRandomItem() {
   item.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
   item.style.top = '-50px';
 
-  // تصميم العنصر مع صورة في المنتصف
-  item.style.width = '50px';
-  item.style.height = '50px';
-  item.style.background = '#fff';
-  item.style.borderRadius = '50%';
-  item.style.position = 'absolute';
-
   const img = document.createElement('img');
-  img.src ='i/ccccc.jpg'; // ضع مسار الصورة هنا
+  img.src = 'i/ccccc.jpg';
   img.style.width = '100%';
   img.style.height = '100%';
-  img.style.position = 'absolute';
-  img.style.borderRadius = '50%';
-  
   item.appendChild(img);
   document.body.appendChild(item);
 
@@ -266,3 +252,5 @@ Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 Telegram.WebApp.setBackgroundColor('#000000');
 Telegram.WebApp.setHeaderColor('#000000');
+
+
