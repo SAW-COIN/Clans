@@ -225,7 +225,7 @@ function createRandomItem() {
   item.style.position = 'absolute';
 
   const img = document.createElement('img');
-  img.src ='i/ccc.png'; // ضع مسار الصورة هنا
+  img.src ='i/ccccc.jpg'; // ضع مسار الصورة هنا
   img.style.width = '75%';
   img.style.height = '75%';
   img.style.position = 'absolute';
