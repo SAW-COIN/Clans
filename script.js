@@ -123,7 +123,7 @@ function startGame() {
   // إنشاء العناصر المتساقطة
   setInterval(() => {
     if (!gameOver) createRandomItem();
-  }, 400);
+  }, 200);
 }
 
 // إنهاء اللعبة
@@ -152,7 +152,7 @@ function createRandomItem() {
   let falling = setInterval(() => {
     if (!gameOver) {
       item.style.top = `${item.offsetTop + 10}px`;
-      if (item.offsetTop > window.innerHeight - 50) {
+      if (item.offsetTop > window.innerHeight - 10) {
         document.body.removeChild(item);
         clearInterval(falling);
       }
@@ -170,7 +170,7 @@ function createRandomItem() {
         document.body.removeChild(item);
         clearInterval(falling);
         isSwiping = false;
-      }, 200);
+      }, 100);
     }
   });
 }
