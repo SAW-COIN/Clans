@@ -212,6 +212,16 @@ function createItem(className, onClick) {
   });
 }
 
+// التعامل مع السحب
+function handleSwipe(event) {
+  if (!swipeActive && !gameOver) {
+    swipeActive = true;
+    score++;
+    updateUI();
+    setTimeout(() => (swipeActive = false), 300); // السماح بالسحب كل 300ms
+  }
+}
+
 // عرض إشعار
 function showNotification(message) {
   const notification = document.createElement('div');
