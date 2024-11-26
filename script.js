@@ -17,7 +17,7 @@ const uiElements = {
 
 // متغيرات اللعبة
 let score = 0;
-let timeLeft = 60;
+let timeLeft = 10;
 let gameOver = false;
 let activeTouches = false; // للتحقق إذا كان السحب نشطًا
 let gameState = {
@@ -163,7 +163,7 @@ function displayDailyTimer(seconds) {
 // بدء اللعبة
 function startGame() {
   score = 0;
-  timeLeft = 60;
+  timeLeft = 10;
   gameOver = false;
   updateUI();
 
