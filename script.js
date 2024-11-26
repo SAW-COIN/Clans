@@ -252,5 +252,6 @@ uiElements.startButton.addEventListener('click', startGame);
 // تحميل البيانات عند فتح الصفحة
 window.onload = fetchUserDataFromTelegram;
 
+Telegram.WebApp.expand();
 
 
