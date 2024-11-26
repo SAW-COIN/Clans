@@ -1,7 +1,6 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './i/Scripts/config.js';
 
-// إنشاء عميل Supabase
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // تعريف عناصر واجهة المستخدم
@@ -15,60 +14,21 @@ const uiElements = {
   overlay: document.getElementById('overlay'),
 };
 
-// متغيرات اللعبة
 let score = 0;
 let timeLeft = 10;
 let gameOver = false;
-let activeTouches = false; // للتحقق إذا كان السحب نشطًا
+let userTelegramId = null;
 let gameState = {
   balance: 0,
   lastPlayDate: null,
 };
-let userTelegramId = null;
 
-// تعطيل التأثيرات الافتراضية للمس
-window.addEventListener('touchstart', (event) => event.preventDefault());
+// تفعيل الشاشة الكاملة عند فتح التطبيق
+window.Telegram.WebApp.expand();
+window.Telegram.WebApp.setHeaderColor('#000000');
+window.Telegram.WebApp.setBackgroundColor('#000000');
 
-// تتبع لمس الشاشة
-document.body.addEventListener('touchmove', handleSwipe);
-document.body.addEventListener('touchend', () => (activeTouches = false));
-
-// تحسين حركة السحب والجمع
-function handleSwipe(event) {
-  if (gameOver) return;
-
-  activeTouches = true;
-
-  const touch = event.touches[0];
-  const x = touch.clientX;
-  const y = touch.clientY;
-
-  // تحديد العناصر التي تتلامس مع مسار السحب
-  const elements = document.elementsFromPoint(x, y);
-
-  elements.forEach((el) => {
-    if (el.classList.contains('fallingItem')) {
-      // إضافة تأثير جمالي قبل الإزالة
-      collectItemEffect(el);
-
-      // إزالة العنصر بعد التأثير
-      setTimeout(() => el.remove(), 300);
-
-      // تحديث النقاط
-      score++;
-      updateUI();
-    }
-  });
-}
-
-// تأثير الجمع (تصغير واختفاء)
-function collectItemEffect(element) {
-  element.style.transition = 'transform 0.3s, opacity 0.3s';
-  element.style.transform = 'scale(0)';
-  element.style.opacity = '0';
-}
-
-// جلب بيانات المستخدم من Telegram
+// تحميل بيانات المستخدم
 async function fetchUserDataFromTelegram() {
   const telegramApp = window.Telegram.WebApp;
   telegramApp.ready();
@@ -114,7 +74,7 @@ async function registerNewUser(telegramId) {
   }
 }
 
-// تحقق من إمكانية اللعب اليوم
+// التحقق من إمكانية اللعب
 function checkDailyPlayAccess() {
   const today = new Date().setHours(0, 0, 0, 0);
   const lastPlay = new Date(gameState.lastPlayDate || 0).setHours(0, 0, 0, 0);
@@ -128,7 +88,7 @@ function checkDailyPlayAccess() {
   }
 }
 
-// حساب الوقت المتبقي لليوم التالي
+// حساب الوقت المتبقي
 function calculateTimeToNextDay() {
   const now = new Date();
   const nextDay = new Date();
@@ -136,7 +96,7 @@ function calculateTimeToNextDay() {
   return Math.floor((nextDay - now) / 1000);
 }
 
-// عرض المؤقت اليومي
+// عرض عداد الوقت المتبقي
 function displayDailyTimer(seconds) {
   uiElements.overlay.style.display = 'block';
   uiElements.startButton.style.display = 'none';
@@ -166,7 +126,6 @@ function startGame() {
   updateUI();
 
   uiElements.startButton.style.display = 'none';
-  uiElements.retryButton.style.display = 'none';
 
   const gameTimer = setInterval(() => {
     if (gameOver) {
@@ -180,9 +139,6 @@ function startGame() {
       }
     }
   }, 1000);
-
-  // بدء إنشاء العناصر المتساقطة
-  setTimeout(() => createRandomItem(), 200);
 }
 
 // إنهاء اللعبة
@@ -207,62 +163,17 @@ async function endGame() {
   displayDailyTimer(calculateTimeToNextDay());
 }
 
-// إنشاء عنصر متساقط عشوائي
-function createRandomItem() {
-  const item = document.createElement('div');
-  item.classList.add('fallingItem');
-  item.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
-  item.style.top = '-50px';
-
-  // تصميم العنصر مع صورة في المنتصف
-  item.style.width = '50px';
-  item.style.height = '50px';
-  item.style.background = '#fff';
-  item.style.borderRadius = '50%';
-  item.style.position = 'absolute';
-
-  const img = document.createElement('img');
-  img.src = 'i/ccc.png'; // ضع مسار الصورة هنا
-  img.style.width = '75%';
-  img.style.height = '75%';
-  img.style.position = 'absolute';
-  img.style.top = '18%';
-  img.style.left = '10%';
-
-  item.appendChild(img);
-  document.body.appendChild(item);
-
-  const falling = setInterval(() => {
-    if (!gameOver) {
-      item.style.top = `${item.offsetTop + 5}px`;
-      if (item.offsetTop > window.innerHeight - 10) {
-        item.remove();
-        clearInterval(falling);
-      }
-    }
-  }, 30);
-
-  setTimeout(() => {
-    if (!gameOver) createRandomItem();
-  }, Math.max(500 - timeLeft * 5, 100));
-}
-
 // تحديث واجهة المستخدم
 function updateUI() {
   uiElements.scoreDisplay.innerText = `${score}`;
   uiElements.timerDisplay.innerText = `00:${timeLeft < 10 ? '0' : ''}${timeLeft}`;
 }
 
-// بدء اللعبة عند الضغط على الزر
-uiElements.startButton.addEventListener('click', startGame);
-
-// تحميل البيانات عند فتح الصفحة
+// عند تحميل الصفحة
 window.onload = fetchUserDataFromTelegram;
 
-// تفعيل وضع ملء الشاشة
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
-Telegram.WebApp.setBackgroundColor('#000000');
-Telegram.WebApp.setHeaderColor('#000000');
+// عند الضغط على زر البدء
 
 
+
+uiElements.startButton.addEventListener('click', startGame);
