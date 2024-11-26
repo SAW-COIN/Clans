@@ -1,169 +1,212 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './i/Scripts/config.js';
 
+// إنشاء عميل Supabase
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // تعريف عناصر واجهة المستخدم
 const uiElements = {
+  purchaseNotification: document.getElementById('purchaseNotification'),
   scoreDisplay: document.getElementById('score'),
   timerDisplay: document.getElementById('timer'),
-  retryButton: document.getElementById('retryButton'),
   startButton: document.getElementById('startButton'),
+  retryButton: document.getElementById('retryButton'),
   dailyTimer: document.getElementById('dailyTimer'),
   overlay: document.getElementById('overlay'),
 };
 
 // متغيرات اللعبة
 let score = 0;
-let gameState = { balance: 0, lastPlayDate: null };
+let timeLeft = 50;
+let gameOver = false;
 let isSwiping = false;
+let gameState = {
+  balance: 0,
+  lastPlayDate: null, // تاريخ آخر لعب
+};
+let userTelegramId = null;
 
-// جلب بيانات المستخدم من Supabase
-async function fetchUserData() {
+// تعطيل التأثيرات الافتراضية للمس
+window.addEventListener('touchstart', (event) => event.preventDefault());
+
+// جلب بيانات المستخدم من Telegram
+async function fetchUserDataFromTelegram() {
   const telegramApp = window.Telegram.WebApp;
   telegramApp.ready();
 
-  const userTelegramId = telegramApp.initDataUnsafe.user?.id;
-  if (!userTelegramId) return;
+  userTelegramId = telegramApp.initDataUnsafe.user?.id;
 
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('telegram_id', userTelegramId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('Error fetching user data:', error);
+  if (!userTelegramId) {
+    console.error("Failed to fetch Telegram user data.");
     return;
   }
 
-  if (data) {
-    gameState = { ...gameState, ...data.game_state, balance: data.balance };
-    checkPlayEligibility();
-  } else {
-    await registerNewUser(userTelegramId, telegramApp.initDataUnsafe.user.username);
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('telegram_id', userTelegramId)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    if (data) {
+      gameState = { ...gameState, ...data };
+      checkDailyPlayAccess();
+    } else {
+      await registerNewUser(userTelegramId);
+    }
+  } catch (err) {
+    console.error('Error while fetching user data:', err);
   }
 }
 
 // تسجيل مستخدم جديد
-async function registerNewUser(telegramId, username) {
-  const { error } = await supabase.from('users').insert({
-    telegram_id: telegramId,
-    username: username,
-    balance: 0,
-    game_state: { lastPlayDate: null },
-  });
+async function registerNewUser(telegramId) {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .insert([{ telegram_id: telegramId, balance: 0, last_play_date: null }]);
 
-  if (error) console.error('Error registering user:', error);
+    if (error) throw error;
+    gameState = { telegram_id: telegramId, balance: 0, lastPlayDate: null };
+  } catch (err) {
+    console.error('Unexpected error while registering new user:', err);
+  }
 }
 
-// التحقق من أهلية اللعب
-function checkPlayEligibility() {
-  const today = new Date().toISOString().split('T')[0];
-  if (gameState.lastPlayDate === today) {
-    showDailyTimer();
-  } else {
+// تحقق من إمكانية اللعب اليوم
+function checkDailyPlayAccess() {
+  const today = new Date().setHours(0, 0, 0, 0);
+  const lastPlay = new Date(gameState.lastPlayDate || 0).setHours(0, 0, 0, 0);
+
+  if (today > lastPlay) {
     uiElements.startButton.style.display = 'block';
+    uiElements.overlay.style.display = 'none';
+  } else {
+    const timeRemaining = calculateTimeToNextDay();
+    displayDailyTimer(timeRemaining);
   }
+}
+
+// حساب الوقت المتبقي لليوم التالي
+function calculateTimeToNextDay() {
+  const now = new Date();
+  const nextDay = new Date();
+  nextDay.setHours(24, 0, 0, 0);
+  return Math.floor((nextDay - now) / 1000);
+}
+
+// عرض المؤقت اليومي
+function displayDailyTimer(seconds) {
+  uiElements.overlay.style.display = 'block';
+  uiElements.startButton.style.display = 'none';
+
+  const updateTimer = () => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    uiElements.dailyTimer.innerText = `Next game in: ${hours}h ${minutes}m ${secs}s`;
+
+    if (seconds > 0) {
+      seconds--;
+      setTimeout(updateTimer, 1000);
+    } else {
+      checkDailyPlayAccess();
+    }
+  };
+  updateTimer();
 }
 
 // بدء اللعبة
 function startGame() {
+  score = 0;
+  timeLeft = 60;
+  gameOver = false;
+  updateUI();
+
   uiElements.startButton.style.display = 'none';
   uiElements.retryButton.style.display = 'none';
-  uiElements.timerDisplay.textContent = '60';
-  score = 0;
 
-  const timer = setInterval(() => {
-    const timeLeft = parseInt(uiElements.timerDisplay.textContent, 10) - 1;
-    uiElements.timerDisplay.textContent = timeLeft;
-
-    if (timeLeft <= 0) {
-      clearInterval(timer);
-      endGame();
+  const gameTimer = setInterval(() => {
+    if (gameOver) {
+      clearInterval(gameTimer);
+    } else {
+      timeLeft--;
+      updateUI();
+      if (timeLeft <= 0) endGame();
     }
   }, 1000);
 
-  createFallingItems();
+  setInterval(() => {
+    if (!gameOver) createRandomItem();
+  }, 200);
 }
 
 // إنهاء اللعبة
 async function endGame() {
+  gameOver = true;
   gameState.balance += score;
-  gameState.lastPlayDate = new Date().toISOString().split('T')[0];
 
-  await supabase.from('users').update({
-    balance: gameState.balance,
-    game_state: gameState,
-  }).eq('telegram_id', gameState.telegram_id);
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({
+        balance: gameState.balance,
+        last_play_date: new Date().toISOString(),
+      })
+      .eq('telegram_id', userTelegramId);
 
-  showDailyTimer();
+    if (error) throw error;
+  } catch (err) {
+    console.error('Error updating game state:', err);
+  }
+
+  displayDailyTimer(calculateTimeToNextDay());
 }
 
-// عرض مؤقت يومي
-function showDailyTimer() {
-  const now = new Date();
-  const nextDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  const timeLeft = nextDay - now;
+// إنشاء عنصر متساقط عشوائي
+function createRandomItem() {
+  const item = document.createElement('div');
+  item.classList.add('fallingItem');
+  item.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
+  item.style.top = '-50px';
+  document.body.appendChild(item);
 
-  uiElements.overlay.style.display = 'flex';
-
-  const interval = setInterval(() => {
-    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-    uiElements.dailyTimer.textContent = `${hours}h ${minutes}m ${seconds}s`;
-
-    if (timeLeft <= 0) {
-      clearInterval(interval);
-      uiElements.overlay.style.display = 'none';
-      uiElements.startButton.style.display = 'block';
+  let falling = setInterval(() => {
+    if (!gameOver) {
+      item.style.top = `${item.offsetTop + 10}px`;
+      if (item.offsetTop > window.innerHeight - 10) {
+        document.body.removeChild(item);
+        clearInterval(falling);
+      }
     }
-  }, 1000);
+  }, 30);
+
+  item.addEventListener('touchmove', () => {
+    if (!isSwiping) {
+      isSwiping = true;
+      score++;
+      updateUI();
+      item.remove();
+      clearInterval(falling);
+      isSwiping = false;
+    }
+  });
 }
 
-// إنشاء العناصر المتساقطة
-function createFallingItems() {
-  setInterval(() => {
-    const item = document.createElement('div');
-    item.classList.add('falling-item');
-    item.style.left = `${Math.random() * window.innerWidth}px`;
-    item.style.top = `0px`;
-
-    document.body.appendChild(item);
-
-    let fallInterval = setInterval(() => {
-      if (!isSwiping) {
-        item.style.top = `${item.offsetTop + 5}px`;
-
-        if (item.offsetTop > window.innerHeight) {
-          document.body.removeChild(item);
-          clearInterval(fallInterval);
-        }
-      }
-    }, 50);
-
-    item.addEventListener('touchmove', () => {
-      if (!isSwiping) {
-        isSwiping = true;
-        score++;
-        uiElements.scoreDisplay.textContent = score;
-        item.remove();
-        clearInterval(fallInterval);
-        setTimeout(() => (isSwiping = false), 100);
-      }
-    });
-  }, 500);
+// تحديث واجهة المستخدم
+function updateUI() {
+  uiElements.scoreDisplay.innerText = `${score}`;
+  uiElements.timerDisplay.innerText = `00 : ${timeLeft}`;
 }
 
-// تهيئة اللعبة
-async function initGame() {
-  await fetchUserData();
+// بدء اللعبة عند الضغط على الزر
+uiElements.startButton.addEventListener('click', startGame);
 
-  uiElements.startButton.addEventListener('click', startGame);
-}
+// تحميل البيانات عند فتح الصفحة
+window.onload = fetchUserDataFromTelegram;
 
-window.onload = initGame;
 
 
