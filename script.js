@@ -146,7 +146,7 @@ function displayDailyTimer(seconds) {
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
 
-    uiElements.dailyTimer.innerText = `Next game in: ${hours}h ${minutes}m ${secs}s`;
+    uiElements.dailyTimer.innerText = ` ${hours}h ${minutes}m ${secs}s`;
 
     if (seconds > 0) {
       seconds--;
