@@ -257,21 +257,21 @@ body {
     border-radius: 10px;
     margin-top: 55%;
     display: flex;
-    align-items: center; /* لضبط محاذاة الصورة والنص عموديًا */
-    justify-content: center; /* لضبط المحاذاة أفقيا */
+    align-items: center; 
+    justify-content: center; 
     padding-left: 5px; 
 } 
 
-#timer::before {
+/*#timer::before {
     content: "";
     display: inline-block;
-    width: 20px; /* عرض الصورة */
-    height: 20px; /* ارتفاع الصورة */
-    background-image: url('i/hour.png'); /* رابط الصورة */
+    width: 20px; 
+    height: 20px; 
+    background-image: url('i/hour.png'); 
     background-size: contain;
     background-repeat: no-repeat;
-    margin-right: 4px; /* مسافة بين الصورة والنص */
-}
+    margin-right: 4px;
+}*/
 
 #gameArea {
     width: 100%;
