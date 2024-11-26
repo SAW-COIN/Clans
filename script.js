@@ -229,7 +229,8 @@ function createRandomItem() {
   img.style.width = '100%';
   img.style.height = '100%';
   img.style.position = 'absolute';
-
+  img.style.borderRadius = '50%';
+  
   item.appendChild(img);
   document.body.appendChild(item);
 
