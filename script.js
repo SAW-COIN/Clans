@@ -123,6 +123,7 @@ function checkDailyPlayAccess() {
   if (today > lastPlay) {
     uiElements.startButton.style.display = 'block'; // إظهار زر بدء اللعبة
     uiElements.overlay.style.display = 'none'; // إخفاء التراكب
+    loadRemainingTimer();
   } else {
     const timeRemaining = calculateTimeToNextDay(); // حساب الوقت المتبقي لليوم التالي
     displayDailyTimer(timeRemaining); // عرض المؤقت
@@ -264,26 +265,7 @@ function updateUI() {
 uiElements.startButton.addEventListener('click', startGame);
 
 // تحميل البيانات عند فتح الصفحة
-window.onload = fetchUserDataFromTelegram;
-
-// تفعيل وضع ملء الشاشة
-Telegram.WebApp.ready();
-Telegram.WebApp.expand();
-Telegram.WebApp.setBackgroundColor('#000000');
-Telegram.WebApp.setHeaderColor('#000000');
-
-// تحديث تاريخ آخر لعب في قاعدة البيانات
-async function updateLastPlayDate(date) {
-  try {
-    const { error } = await supabase
-      .from('users')
-      .update({ last_play_date: date.toISOString() })
-      .eq('telegram_id', userTelegramId);
-
-    if (error) {
-      console.error('Error updating last play date:', error);
-    }
-  } catch (err) {
-    console.error('Unexpected error while updating last play date:', err);
-  }
-}
+window.onload = () => {
+  fetchUserDataFromTelegram();
+  checkDailyPlayAccess();
+};
