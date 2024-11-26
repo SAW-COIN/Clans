@@ -17,7 +17,7 @@ const uiElements = {
 
 // متغيرات اللعبة
 let score = 0;
-let timeLeft = 90;
+let timeLeft = 10;
 let gameOver = false;
 let activeTouches = false;
 let gameState = {
@@ -25,16 +25,6 @@ let gameState = {
   lastPlayDate: null,
 };
 let userTelegramId = null;
-
-// عرض الإشعارات للمستخدم
-function showNotification(notificationElement, message) {
-    if (!notificationElement) return;
-    notificationElement.innerText = message;
-    notificationElement.classList.add('show');
-    setTimeout(() => {
-        notificationElement.classList.remove('show');
-    }, 4000);
-}
 
 // تعطيل التأثيرات الافتراضية للمس
 window.addEventListener('touchstart', (event) => event.preventDefault());
@@ -126,15 +116,16 @@ async function registerNewUser(telegramId) {
 
 // تحقق من إمكانية اللعب اليوم
 function checkDailyPlayAccess() {
-  const today = new Date().setHours(0, 0, 0, 0);
-  const lastPlay = new Date(gameState.lastPlayDate || 0).setHours(0, 0, 0, 0);
+  const today = new Date().setHours(0, 0, 0, 0); // بداية اليوم
+  const lastPlay = new Date(gameState.lastPlayDate || 0).setHours(0, 0, 0, 0); // بداية آخر يوم لعب فيه المستخدم
 
+  // إذا كان اليوم مختلف عن آخر يوم لعب فيه المستخدم
   if (today > lastPlay) {
-    uiElements.startButton.style.display = 'block';
-    uiElements.overlay.style.display = 'none';
+    uiElements.startButton.style.display = 'block'; // إظهار زر بدء اللعبة
+    uiElements.overlay.style.display = 'none'; // إخفاء التراكب
   } else {
-    const timeRemaining = calculateTimeToNextDay();
-    displayDailyTimer(timeRemaining);
+    const timeRemaining = calculateTimeToNextDay(); // حساب الوقت المتبقي لليوم التالي
+    displayDailyTimer(timeRemaining); // عرض المؤقت
   }
 }
 
@@ -171,12 +162,16 @@ function displayDailyTimer(seconds) {
 // بدء اللعبة
 function startGame() {
   score = 0;
-  timeLeft = 90;
+  timeLeft = 10;
   gameOver = false;
   updateUI();
 
   uiElements.startButton.style.display = 'none';
   uiElements.retryButton.style.display = 'none';
+
+  // تحديث قاعدة البيانات مع تاريخ اللعب الحالي
+  const currentDate = new Date().toISOString();
+  updateLastPlayDate(currentDate);
 
   // تشغيل المؤقت
   const gameTimer = setInterval(() => {
@@ -235,7 +230,7 @@ function createRandomItem() {
   item.style.position = 'absolute';
 
   const img = document.createElement('img');
-  img.src ='i/ccccc.jpg'; // ضع مسار الصورة هنا
+  img.src = 'i/ccccc.jpg'; // ضع مسار الصورة هنا
   img.style.width = '100%';
   img.style.height = '100%';
   img.style.position = 'absolute';
@@ -277,4 +272,16 @@ Telegram.WebApp.expand();
 Telegram.WebApp.setBackgroundColor('#000000');
 Telegram.WebApp.setHeaderColor('#000000');
 
+// تحديث تاريخ آخر لعب في قاعدة البيانات
+async function updateLastPlayDate(date) {
+  try {
+    const { error } = await supabase
+      .from('users')
+      .update({ last_play_date: date })
+      .eq('telegram_id', userTelegramId);
 
+    if (error) throw error;
+  } catch (err) {
+    console.error('Error updating last play date:', err);
+  }
+}
