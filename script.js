@@ -19,15 +19,41 @@ const uiElements = {
 let score = 0;
 let timeLeft = 60;
 let gameOver = false;
-let isSwiping = false;
+let activeTouches = false; // للتحقق إذا كان السحب نشطًا
 let gameState = {
   balance: 0,
-  lastPlayDate: null, // تاريخ آخر لعب
+  lastPlayDate: null,
 };
 let userTelegramId = null;
 
 // تعطيل التأثيرات الافتراضية للمس
 window.addEventListener('touchstart', (event) => event.preventDefault());
+
+// تتبع لمس الشاشة
+document.body.addEventListener('touchmove', handleSwipe);
+document.body.addEventListener('touchend', () => (activeTouches = false));
+
+// معالجة حركة السحب
+function handleSwipe(event) {
+  if (gameOver) return;
+
+  activeTouches = true;
+
+  const touch = event.touches[0];
+  const x = touch.clientX;
+  const y = touch.clientY;
+
+  // تحديد العناصر التي تتلامس مع مسار السحب
+  const elements = document.elementsFromPoint(x, y);
+
+  elements.forEach((el) => {
+    if (el.classList.contains('fallingItem')) {
+      el.remove(); // إزالة العنصر
+      score++; // تحديث النقاط
+      updateUI();
+    }
+  });
+}
 
 // جلب بيانات المستخدم من Telegram
 async function fetchUserDataFromTelegram() {
@@ -186,17 +212,6 @@ function createRandomItem() {
       }
     }
   }, 30);
-
-  item.addEventListener('touchmove', () => {
-    if (!isSwiping) {
-      isSwiping = true;
-      score++;
-      updateUI();
-      item.remove(); // إزالة العنصر عند السحب
-      clearInterval(falling);
-      setTimeout(() => (isSwiping = false), 100);
-    }
-  });
 }
 
 // تحديث واجهة المستخدم
@@ -210,5 +225,9 @@ uiElements.startButton.addEventListener('click', startGame);
 
 // تحميل البيانات عند فتح الصفحة
 window.onload = fetchUserDataFromTelegram;
+
+
+
+
 
 
