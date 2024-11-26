@@ -9,15 +9,12 @@ const uiElements = {
   scoreDisplay: document.getElementById('score'),
   userTelegramIdDisplay: document.getElementById('userTelegramId'),
   userTelegramNameDisplay: document.getElementById('userTelegramName'),
+  gameContainer: document.getElementById('gameContainer'),
 };
 
 // متغيرات اللعبة
 let score = 0;
-let swipeActive = false;
 let gameState = { balance: 0 };
-
-// تعطيل التأثيرات الافتراضية للمس
-window.addEventListener('touchstart', (event) => event.preventDefault());
 
 // جلب بيانات المستخدم من Telegram
 async function fetchUserDataFromTelegram() {
@@ -98,23 +95,47 @@ async function updateGameState() {
   }
 }
 
-// التعامل مع السحب
-function handleSwipe(event) {
-  if (!swipeActive) {
-    swipeActive = true;
+// إنشاء عنصر ينبثق عشوائيًا
+function createRandomElement() {
+  const element = document.createElement('div');
+  element.classList.add('popup-element');
+  element.style.position = 'absolute';
+  element.style.width = '50px';
+  element.style.height = '50px';
+  element.style.backgroundColor = 'gold';
+  element.style.borderRadius = '50%';
+  element.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+
+  // تحديد موقع عشوائي على الشاشة
+  const x = Math.random() * (window.innerWidth - 50);
+  const y = Math.random() * (window.innerHeight - 50);
+  element.style.left = `${x}px`;
+  element.style.top = `${y}px`;
+
+  // إضافة الحدث عند النقر على العنصر
+  element.addEventListener('click', () => {
     score++;
     gameState.balance++;
     updateGameState();
     updateUI();
-    setTimeout(() => (swipeActive = false), 100); // السماح بالسحب كل 100ms لتوفير سلاسة أكبر
-  }
+    element.remove();
+  });
+
+  uiElements.gameContainer.appendChild(element);
+
+  // إزالة العنصر بعد فترة إذا لم يتم النقر عليه
+  setTimeout(() => {
+    if (element.parentElement) element.remove();
+  }, 3000);
 }
 
-// إضافة مستمع أحداث للسحب
-window.addEventListener('touchmove', handleSwipe);
+// إطلاق العناصر بشكل دوري
+function startGame() {
+  setInterval(createRandomElement, 1000); // إضافة عنصر جديد كل ثانية
+}
 
 // بدء اللعبة عند تحميل الصفحة
 window.onload = async function () {
   await fetchUserDataFromTelegram();
+  startGame();
 };
-
