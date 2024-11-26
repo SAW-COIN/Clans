@@ -217,14 +217,14 @@ function createRandomItem() {
   // تصميم العنصر مع صورة في المنتصف
   item.style.width = '40px';
   item.style.height = '40px';
-  item.style.background = 'radial-gradient(circle, #fff, #1a1a1a)';
+  item.style.background = 'radial-gradient(circle, #000, #fff)';
   item.style.borderRadius = '50%';
   item.style.position = 'absolute';
 
   const img = document.createElement('img');
   img.src = 'i/ccc.png'; // ضع مسار الصورة هنا
-  img.style.width = '60%';
-  img.style.height = '60%';
+  img.style.width = '70%';
+  img.style.height = '70%';
   img.style.position = 'absolute';
   img.style.top = '20%';
   img.style.left = '20%';
