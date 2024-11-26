@@ -17,7 +17,7 @@ const uiElements = {
 
 // متغيرات اللعبة
 let score = 0;
-let timeLeft = 10;
+let timeLeft = 90;
 let gameOver = false;
 let activeTouches = false;
 let gameState = {
@@ -162,7 +162,7 @@ function displayDailyTimer(seconds) {
 // بدء اللعبة
 function startGame() {
   score = 0;
-  timeLeft = 10;
+  timeLeft = 90;
   gameOver = false;
   updateUI();
 
@@ -170,7 +170,7 @@ function startGame() {
   uiElements.retryButton.style.display = 'none';
 
   // تحديث قاعدة البيانات مع تاريخ اللعب الحالي
-  const currentDate = new Date().toISOString();
+  const currentDate = new Date();
   updateLastPlayDate(currentDate);
 
   // تشغيل المؤقت
@@ -277,11 +277,13 @@ async function updateLastPlayDate(date) {
   try {
     const { error } = await supabase
       .from('users')
-      .update({ last_play_date: date })
+      .update({ last_play_date: date.toISOString() })
       .eq('telegram_id', userTelegramId);
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating last play date:', error);
+    }
   } catch (err) {
-    console.error('Error updating last play date:', err);
+    console.error('Unexpected error while updating last play date:', err);
   }
 }
