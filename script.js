@@ -102,6 +102,11 @@ async function fetchUserDataFromTelegram() {
   }
 }
 
+
+window.Telegram.WebApp.setHeaderColor('#000000');
+window.Telegram.WebApp.setBackgroundColor('#000000');
+
+
 // تسجيل مستخدم جديد
 async function registerNewUser(telegramId) {
   try {
