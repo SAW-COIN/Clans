@@ -29,11 +29,7 @@ let userTelegramId = null;
 // تعطيل التأثيرات الافتراضية للمس
 window.addEventListener('touchstart', (event) => event.preventDefault());
 
-// تتبع لمس الشاشة
-document.body.addEventListener('touchmove', handleSwipe);
-document.body.addEventListener('touchend', () => (activeTouches = false));
-
-// معالجة حركة السحب
+// تحسين حركة السحب والجمع
 function handleSwipe(event) {
   if (gameOver) return;
 
@@ -43,17 +39,31 @@ function handleSwipe(event) {
   const x = touch.clientX;
   const y = touch.clientY;
 
-  // تحديد العناصر التي تتلامس مع مسار السحب
+  // تحديد العناصر التي تتلامس مع مسار السحب (إضافة مساحة مرنة)
   const elements = document.elementsFromPoint(x, y);
 
   elements.forEach((el) => {
     if (el.classList.contains('fallingItem')) {
-      el.remove(); // إزالة العنصر
-      score++; // تحديث النقاط
+      // إضافة تأثير جمالي قبل الإزالة
+      collectItemEffect(el);
+
+      // إزالة العنصر بعد التأثير
+      setTimeout(() => el.remove(), 300);
+
+      // تحديث النقاط
+      score++;
       updateUI();
     }
   });
 }
+
+// تأثير الجمع (تصغير واختفاء)
+function collectItemEffect(element) {
+  element.style.transition = 'transform 0.3s, opacity 0.3s';
+  element.style.transform = 'scale(0)';
+  element.style.opacity = '0';
+}
+
 
 // جلب بيانات المستخدم من Telegram
 async function fetchUserDataFromTelegram() {
@@ -166,7 +176,10 @@ function startGame() {
         endGame();
       }
     }
-  }, 1000);
+   1000);
+  // بدء إنشاء العناصر بشكل مكثف
+  setTimeout(() => createRandomItem(), 200);
+} 
 
   setInterval(() => {
     if (!gameOver) createRandomItem();
@@ -196,22 +209,35 @@ async function endGame() {
 }
 
 // إنشاء عنصر متساقط عشوائي
+// زيادة العناصر المتساقطة تدريجيًا
 function createRandomItem() {
   const item = document.createElement('div');
   item.classList.add('fallingItem');
   item.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
   item.style.top = '-50px';
+
+  // إضافة شكل العنصر وتأثيراته
+  item.style.width = '40px';
+  item.style.height = '40px';
+  item.style.background = 'radial-gradient(circle, #FFD700, #FFA500)'; // تأثير ذهبي
+  item.style.borderRadius = '50%'; // جعل العنصر دائريًا
+  item.style.position = 'absolute';
   document.body.appendChild(item);
 
   let falling = setInterval(() => {
     if (!gameOver) {
-      item.style.top = `${item.offsetTop + 10}px`;
+      item.style.top = `${item.offsetTop + 5}px`;
       if (item.offsetTop > window.innerHeight - 10) {
         item.remove();
         clearInterval(falling);
       }
     }
   }, 30);
+
+  // إضافة معدل تساقط أعلى تدريجيًا
+  setTimeout(() => {
+    if (!gameOver) createRandomItem();
+  }, Math.max(500 - timeLeft * 5, 100)); // تقليل الفارق الزمني مع الوقت
 }
 
 // تحديث واجهة المستخدم
