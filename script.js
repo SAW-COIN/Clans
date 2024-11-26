@@ -12,7 +12,8 @@ const uiElements = {
   retryButton: document.getElementById('retryButton'),
   userTelegramIdDisplay: document.getElementById('userTelegramId'),
   userTelegramNameDisplay: document.getElementById('userTelegramName'),
-  dailyTimerDisplay: document.getElementById('dailyTimer')
+  dailyTimerDisplay: document.getElementById('dailyTimer'),
+  overlay: document.getElementById('overlay')
 };
 
 // متغيرات اللعبة
@@ -102,6 +103,7 @@ function checkDailyGameAvailability() {
 
 // بدء عداد اليومي
 function startDailyCountdown(timeRemaining) {
+  uiElements.overlay.style.display = 'block';
   const interval = setInterval(() => {
     const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
     const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
@@ -113,6 +115,7 @@ function startDailyCountdown(timeRemaining) {
       clearInterval(interval);
       uiElements.retryButton.style.display = 'block';
       uiElements.dailyTimerDisplay.innerText = '';
+      uiElements.overlay.style.display = 'none';
     }
 
     timeRemaining -= 1000;
@@ -162,6 +165,7 @@ function startGame() {
   }, 1000);
 
   document.body.addEventListener('touchmove', handleSwipe);
+  spawnFallingItems();
 }
 
 // إنهاء اللعبة
@@ -202,6 +206,36 @@ function showNotification(message) {
   }, 3000);
 }
 
+// ظهور العملات بشكل متساقط
+function spawnFallingItems() {
+  const gameContainer = document.getElementById('gameContainer');
+
+  const interval = setInterval(() => {
+    if (gameOver) {
+      clearInterval(interval);
+      return;
+    }
+
+    const item = document.createElement('div');
+    item.classList.add('fallingItem');
+    item.style.left = `${Math.random() * 90}vw`;
+    gameContainer.appendChild(item);
+
+    item.addEventListener('click', () => {
+      score++;
+      item.classList.add('dead');
+      setTimeout(() => item.remove(), 500);
+      updateUI();
+    });
+
+    setTimeout(() => {
+      if (!item.classList.contains('dead')) {
+        item.remove();
+      }
+    }, 5000);
+  }, 1000);
+}
+
 // إعادة تشغيل اللعبة
 uiElements.retryButton.addEventListener('click', () => {
   uiElements.retryButton.style.display = 'none';
@@ -211,5 +245,6 @@ uiElements.retryButton.addEventListener('click', () => {
 // بدء اللعبة عند تحميل الصفحة
 window.onload = async function () {
   uiElements.retryButton.style.display = 'none';
+  uiElements.overlay.style.display = 'none';
   await fetchUserDataFromTelegram();
 };
