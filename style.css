@@ -225,7 +225,7 @@ body {
     margin-bottom: 0;
     margin-top: 0;
     padding: 3px;
-    border-radius: 10px;
+    border-radius: 25px;
     margin-top: 55%;
     display: flex;
     align-items: center; /* لضبط محاذاة الصورة والنص عموديًا */
@@ -254,7 +254,7 @@ body {
     color: white;
     font-weight: bold;
     padding: 3px;
-    border-radius: 10px;
+    border-radius: 25px;
     margin-top: 55%;
     display: flex;
     align-items: center; 
