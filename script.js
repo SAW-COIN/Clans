@@ -17,7 +17,7 @@ const uiElements = {
 
 // متغيرات اللعبة
 let score = 0;
-let timeLeft = 50;
+let timeLeft = 60;
 let gameOver = false;
 let isSwiping = false;
 let gameState = {
@@ -135,7 +135,10 @@ function startGame() {
     } else {
       timeLeft--;
       updateUI();
-      if (timeLeft <= 0) endGame();
+      if (timeLeft <= 0) {
+        clearInterval(gameTimer);
+        endGame();
+      }
     }
   }, 1000);
 
@@ -178,7 +181,7 @@ function createRandomItem() {
     if (!gameOver) {
       item.style.top = `${item.offsetTop + 10}px`;
       if (item.offsetTop > window.innerHeight - 10) {
-        document.body.removeChild(item);
+        item.remove();
         clearInterval(falling);
       }
     }
@@ -189,9 +192,9 @@ function createRandomItem() {
       isSwiping = true;
       score++;
       updateUI();
-      item.remove();
+      item.remove(); // إزالة العنصر عند السحب
       clearInterval(falling);
-      isSwiping = false;
+      setTimeout(() => (isSwiping = false), 100);
     }
   });
 }
@@ -207,6 +210,5 @@ uiElements.startButton.addEventListener('click', startGame);
 
 // تحميل البيانات عند فتح الصفحة
 window.onload = fetchUserDataFromTelegram;
-
 
 
