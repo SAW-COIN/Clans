@@ -23,6 +23,7 @@ let activeTouches = false;
 let gameState = {
   balance: 0,
   lastPlayDate: null,
+  nextPlayDate: null,
 };
 let userTelegramId = null;
 
@@ -43,6 +44,7 @@ function handleSwipe(event) {
   const x = touch.clientX;
   const y = touch.clientY;
 
+  // تحديد العناصر التي تتلامس مع مسار السحب
   const elements = document.elementsFromPoint(x, y);
 
   elements.forEach((el) => {
@@ -55,7 +57,6 @@ function handleSwipe(event) {
   });
 }
 
-// تأثير الجمع
 function collectItemEffect(element) {
   element.style.transition = 'transform 0.3s, opacity 0.3s';
   element.style.transform = 'scale(0)';
@@ -99,10 +100,18 @@ async function registerNewUser(telegramId) {
   try {
     const { error } = await supabase
       .from('users')
-      .insert([{ telegram_id: telegramId, balance: 0, last_play_date: null }]);
+      .insert([
+        {
+          telegram_id: telegramId,
+          balance: 0,
+          last_play_date: null,
+          next_play_date: null,
+        },
+      ]);
 
     if (error) throw error;
-    gameState = { telegram_id: telegramId, balance: 0, lastPlayDate: null };
+
+    gameState = { telegram_id: telegramId, balance: 0, lastPlayDate: null, nextPlayDate: null };
   } catch (err) {
     console.error('Unexpected error while registering new user:', err);
   }
@@ -111,27 +120,15 @@ async function registerNewUser(telegramId) {
 // تحقق من إمكانية اللعب اليوم
 function checkDailyPlayAccess() {
   const now = new Date();
-  const lastPlayDate = new Date(gameState.lastPlayDate || 0);
-  const timeDiff = now - lastPlayDate;
+  const nextPlayDate = new Date(gameState.nextPlayDate || 0);
 
-  if (timeDiff >= 24 * 60 * 60 * 1000) {
-    // مر يوم جديد
+  if (now >= nextPlayDate) {
     uiElements.startButton.style.display = 'block';
-    uiElements.startButton.innerText = 'ابدأ اللعب';
     uiElements.overlay.style.display = 'none';
   } else {
-    // لم يمر يوم جديد
-    const timeRemaining = Math.floor((24 * 60 * 60 * 1000 - timeDiff) / 1000);
+    const timeRemaining = Math.floor((nextPlayDate - now) / 1000);
     displayDailyTimer(timeRemaining);
   }
-}
-
-// حساب الوقت المتبقي لليوم التالي
-function calculateTimeToNextDay() {
-  const now = new Date();
-  const lastPlayDate = new Date(gameState.lastPlayDate || 0);
-  const nextPlayTime = new Date(lastPlayDate.getTime() + 24 * 60 * 60 * 1000);
-  return Math.floor((nextPlayTime - now) / 1000);
 }
 
 // عرض المؤقت اليومي
@@ -144,7 +141,7 @@ function displayDailyTimer(seconds) {
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
 
-    uiElements.dailyTimer.innerText = `الوقت المتبقي: ${hours} ساعة ${minutes} دقيقة ${secs} ثانية`;
+    uiElements.dailyTimer.innerText = `${hours}h ${minutes}m ${secs}s`;
 
     if (seconds > 0) {
       seconds--;
@@ -187,12 +184,17 @@ async function endGame() {
   gameOver = true;
   gameState.balance += score;
 
+  const now = new Date();
+  const nextPlayDate = new Date();
+  nextPlayDate.setDate(nextPlayDate.getDate() + 1);
+
   try {
     const { error } = await supabase
       .from('users')
       .update({
         balance: gameState.balance,
-        last_play_date: new Date().toISOString(),
+        last_play_date: now.toISOString(),
+        next_play_date: nextPlayDate.toISOString(),
       })
       .eq('telegram_id', userTelegramId);
 
@@ -201,7 +203,7 @@ async function endGame() {
     console.error('Error updating game state:', err);
   }
 
-  displayDailyTimer(calculateTimeToNextDay());
+  displayDailyTimer(Math.floor((nextPlayDate - now) / 1000));
 }
 
 // إنشاء عنصر متساقط عشوائي
@@ -212,11 +214,19 @@ function createRandomItem() {
   item.classList.add('fallingItem');
   item.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
   item.style.top = '-50px';
+  item.style.width = '50px';
+  item.style.height = '50px';
+  item.style.background = '#fff';
+  item.style.borderRadius = '50%';
+  item.style.position = 'absolute';
 
   const img = document.createElement('img');
   img.src = 'i/ccccc.jpg';
   img.style.width = '100%';
   img.style.height = '100%';
+  img.style.position = 'absolute';
+  img.style.borderRadius = '50%';
+
   item.appendChild(img);
   document.body.appendChild(item);
 
@@ -246,11 +256,7 @@ uiElements.startButton.addEventListener('click', startGame);
 
 // تحميل البيانات عند فتح الصفحة
 window.onload = fetchUserDataFromTelegram;
-
-// تفعيل وضع ملء الشاشة
 Telegram.WebApp.ready();
 Telegram.WebApp.expand();
 Telegram.WebApp.setBackgroundColor('#000000');
 Telegram.WebApp.setHeaderColor('#000000');
-
-
