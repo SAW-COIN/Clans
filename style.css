@@ -440,5 +440,6 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%); /* الترجمة للنقل إلى المنتصف تمامًا */
+  white-space: nowrap; 
 }
 
