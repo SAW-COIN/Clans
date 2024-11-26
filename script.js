@@ -226,11 +226,9 @@ function createRandomItem() {
 
   const img = document.createElement('img');
   img.src ='i/ccccc.jpg'; // ضع مسار الصورة هنا
-  img.style.width = '75%';
-  img.style.height = '75%';
+  img.style.width = '100%';
+  img.style.height = '100%';
   img.style.position = 'absolute';
-  img.style.top = '18%';
-  img.style.left = '10%';
 
   item.appendChild(img);
   document.body.appendChild(item);
