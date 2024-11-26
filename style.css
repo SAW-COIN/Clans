@@ -4,7 +4,7 @@
 
 :root {
   --shiny-cta-bg: #1a1a1a; /* خلفية الزر */
-  --shiny-cta-bg-subtle: #1a1818; /* خلفية الزر الفرعية */
+  --shiny-cta-bg-subtle: #808080; /* خلفية الزر الفرعية */
   --shiny-cta-fg: #ffffff; /* اللون الأساسي للنص */
   --shiny-cta-highlight: blue; /* تأثير اللمعان */
   --shiny-cta-highlight-subtle: #8484ff; /* تأثير اللمعان الخفيف */
