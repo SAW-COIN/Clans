@@ -33,8 +33,6 @@ window.addEventListener('touchstart', (event) => event.preventDefault());
 document.body.addEventListener('touchmove', handleSwipe);
 document.body.addEventListener('touchend', () => (activeTouches = false));
 
-//
-
 // تحسين حركة السحب والجمع
 function handleSwipe(event) {
   if (gameOver) return;
@@ -45,7 +43,7 @@ function handleSwipe(event) {
   const x = touch.clientX;
   const y = touch.clientY;
 
-  // تحديد العناصر التي تتلامس مع مسار السحب (إضافة مساحة مرنة)
+  // تحديد العناصر التي تتلامس مع مسار السحب
   const elements = document.elementsFromPoint(x, y);
 
   elements.forEach((el) => {
@@ -101,11 +99,6 @@ async function fetchUserDataFromTelegram() {
     console.error('Error while fetching user data:', err);
   }
 }
-
-
-window.Telegram.WebApp.setHeaderColor('#000000');
-window.Telegram.WebApp.setBackgroundColor('#000000');
-
 
 // تسجيل مستخدم جديد
 async function registerNewUser(telegramId) {
@@ -221,13 +214,22 @@ function createRandomItem() {
   item.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
   item.style.top = '-50px';
 
-  // تصميم العنصر
+  // تصميم العنصر مع صورة في المنتصف
   item.style.width = '40px';
   item.style.height = '40px';
   item.style.background = 'radial-gradient(circle, #fff, #1a1a1a)';
   item.style.borderRadius = '50%';
   item.style.position = 'absolute';
 
+  const img = document.createElement('img');
+  img.src = 'i/ccc.png'; // ضع مسار الصورة هنا
+  img.style.width = '60%';
+  img.style.height = '60%';
+  img.style.position = 'absolute';
+  img.style.top = '20%';
+  img.style.left = '20%';
+
+  item.appendChild(img);
   document.body.appendChild(item);
 
   const falling = setInterval(() => {
@@ -257,6 +259,10 @@ uiElements.startButton.addEventListener('click', startGame);
 // تحميل البيانات عند فتح الصفحة
 window.onload = fetchUserDataFromTelegram;
 
+// تفعيل وضع ملء الشاشة
+Telegram.WebApp.ready();
 Telegram.WebApp.expand();
+Telegram.WebApp.setBackgroundColor('#000000');
+Telegram.WebApp.setHeaderColor('#000000');
 
 
