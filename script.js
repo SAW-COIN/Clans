@@ -6,15 +6,23 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // تعريف عناصر واجهة المستخدم
 const uiElements = {
+  purchaseNotification: document.getElementById('purchaseNotification'),
   scoreDisplay: document.getElementById('score'),
+  timerDisplay: document.getElementById('timer'),
+  retryButton: document.getElementById('retryButton'),
   userTelegramIdDisplay: document.getElementById('userTelegramId'),
   userTelegramNameDisplay: document.getElementById('userTelegramName'),
-  gameContainer: document.getElementById('gameContainer'),
 };
 
 // متغيرات اللعبة
 let score = 0;
+let timeLeft = 60;
+let gameOver = false;
 let gameState = { balance: 0 };
+let isSwiping = false;
+
+// تعطيل التأثيرات الافتراضية للمس
+window.addEventListener('touchstart', (event) => event.preventDefault());
 
 // جلب بيانات المستخدم من Telegram
 async function fetchUserDataFromTelegram() {
@@ -58,7 +66,7 @@ async function fetchUserDataFromTelegram() {
 // تسجيل مستخدم جديد
 async function registerNewUser(userTelegramId, userTelegramName) {
   try {
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from('users')
       .insert([{ telegram_id: userTelegramId, username: userTelegramName, balance: 0 }]);
 
@@ -77,6 +85,7 @@ async function registerNewUser(userTelegramId, userTelegramName) {
 // تحديث واجهة المستخدم
 function updateUI() {
   uiElements.scoreDisplay.innerText = `${score}`;
+  uiElements.timerDisplay.innerText = `00 : ${timeLeft}`;
 }
 
 // تحديث بيانات المستخدم في قاعدة البيانات
@@ -95,47 +104,98 @@ async function updateGameState() {
   }
 }
 
-// إنشاء عنصر ينبثق عشوائيًا
-function createRandomElement() {
-  const element = document.createElement('div');
-  element.classList.add('popup-element');
-  element.style.position = 'absolute';
-  element.style.width = '50px';
-  element.style.height = '50px';
-  element.style.backgroundColor = 'gold';
-  element.style.borderRadius = '50%';
-  element.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.2)';
+// بدء اللعبة
+function startGame() {
+  gameOver = false;
+  score = 0;
+  timeLeft = 60;
+  updateUI();
 
-  // تحديد موقع عشوائي على الشاشة
-  const x = Math.random() * (window.innerWidth - 50);
-  const y = Math.random() * (window.innerHeight - 50);
-  element.style.left = `${x}px`;
-  element.style.top = `${y}px`;
+  // عداد الوقت
+  setInterval(() => {
+    if (!gameOver) {
+      timeLeft--;
+      updateUI();
+      if (timeLeft <= 0) endGame(true);
+    }
+  }, 1000);
 
-  // إضافة الحدث عند النقر على العنصر
-  element.addEventListener('click', () => {
-    score++;
-    gameState.balance++;
+  // إنشاء العناصر المتساقطة
+  setInterval(() => {
+    if (!gameOver) createRandomItem();
+  }, 400);
+}
+
+// إنهاء اللعبة
+function endGame(isWin) {
+  gameOver = true;
+
+  if (isWin) {
+    gameState.balance += score;
     updateGameState();
-    updateUI();
-    element.remove();
+    showNotification('You won! New Balance: ' + gameState.balance);
+  } else {
+    showNotification('Game Over! Try again.');
+  }
+
+  uiElements.retryButton.style.display = 'block';
+}
+
+// إنشاء عنصر متساقط عشوائي
+function createRandomItem() {
+  const item = document.createElement('div');
+  item.classList.add('fallingItem');
+  item.style.left = `${Math.random() * (window.innerWidth - 50)}px`;
+  item.style.top = '-50px';
+  document.body.appendChild(item);
+
+  let falling = setInterval(() => {
+    if (!gameOver) {
+      item.style.top = `${item.offsetTop + 10}px`;
+      if (item.offsetTop > window.innerHeight - 50) {
+        document.body.removeChild(item);
+        clearInterval(falling);
+      }
+    }
+  }, 30);
+
+  // التعامل مع السحب بدلاً من النقر
+  item.addEventListener('touchmove', (event) => {
+    if (!isSwiping) {
+      isSwiping = true;
+      score++;
+      updateUI();
+      item.style.transform = 'scale(0.8)';
+      setTimeout(() => {
+        document.body.removeChild(item);
+        clearInterval(falling);
+        isSwiping = false;
+      }, 200);
+    }
   });
+}
 
-  uiElements.gameContainer.appendChild(element);
+// عرض إشعار
+function showNotification(message) {
+  const notification = document.createElement('div');
+  notification.classList.add('notification');
+  notification.innerText = message;
+  document.body.appendChild(notification);
 
-  // إزالة العنصر بعد فترة إذا لم يتم النقر عليه
   setTimeout(() => {
-    if (element.parentElement) element.remove();
+    notification.remove();
   }, 3000);
 }
 
-// إطلاق العناصر بشكل دوري
-function startGame() {
-  setInterval(createRandomElement, 1000); // إضافة عنصر جديد كل ثانية
-}
+// إعادة تشغيل اللعبة
+uiElements.retryButton.addEventListener('click', () => {
+  uiElements.retryButton.style.display = 'none';
+  startGame();
+});
 
 // بدء اللعبة عند تحميل الصفحة
 window.onload = async function () {
+  uiElements.retryButton.style.display = 'none';
   await fetchUserDataFromTelegram();
   startGame();
 };
