@@ -26,6 +26,16 @@ let gameState = {
 };
 let userTelegramId = null;
 
+// عرض الإشعارات للمستخدم
+function showNotification(notificationElement, message) {
+    if (!notificationElement) return;
+    notificationElement.innerText = message;
+    notificationElement.classList.add('show');
+    setTimeout(() => {
+        notificationElement.classList.remove('show');
+    }, 4000);
+}
+
 // تعطيل التأثيرات الافتراضية للمس
 window.addEventListener('touchstart', (event) => event.preventDefault());
 
