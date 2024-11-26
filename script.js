@@ -29,6 +29,12 @@ let userTelegramId = null;
 // تعطيل التأثيرات الافتراضية للمس
 window.addEventListener('touchstart', (event) => event.preventDefault());
 
+// تتبع لمس الشاشة
+document.body.addEventListener('touchmove', handleSwipe);
+document.body.addEventListener('touchend', () => (activeTouches = false));
+
+//
+
 // تحسين حركة السحب والجمع
 function handleSwipe(event) {
   if (gameOver) return;
