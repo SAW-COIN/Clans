@@ -127,8 +127,7 @@
 
 
 
-
-
+/*     */
 
 /*  بدايه */
 @media only screen and (max-width: 768px) {
@@ -355,84 +354,6 @@ body {
 }
 
 
-.FreezeItem {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background-image: url('i/Freeze.png');
-    background-size: cover;
-    position: absolute;
-    cursor: pointer;
-    animation: freezeEffect 1s ease-in-out forwards;
-}
-
-@keyframes freezeEffect {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(0.8);
-        opacity: 0.6;
-    }
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
- 
-
-.bombItem {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-image: url('i/bombb.png');
-    background-size: cover;
-    position: absolute;
-    cursor: pointer;
-    animation: bombEffect 1s ease-in-out forwards;
-}
-
-@keyframes bombEffect {
-    0% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.2);
-        background-color: red;
-    }
-    100% {
-        transform: scale(1.5);
-        background-color: transparent;
-    }
-}
- 
-.effect.win {
-    background: rgba(0, 255, 0, 0.7);
-    color: white;
-    font-size: 3rem;
-    animation: fadeInEffect 1s ease-in-out;
-}
-
-.effect.lose {
-    background: rgba(255, 0, 0, 0.7);
-    color: white;
-    font-size: 3rem;
-    animation: fadeInEffect 1s ease-in-out;
-}
-
-.effect.freeze {
-    background: rgba(0, 0, 255, 0.7);
-    color: white;
-    font-size: 3rem;
-    animation: fadeInEffect 1s ease-in-out;
-}
-
-@keyframes fadeInEffect {
-    0% { opacity: 0; }
-    100% { opacity: 1; }
-}
- 
-
 #gameScore {
     width: 30%;
     height: 20px;
@@ -484,9 +405,3 @@ body {
         opacity: 1; /* مرئية */
     }
 }
-
-
-.frozen-effect {
-  border: 5px solid rgba(173, 216, 230, 0.7); /* تأثير ثلجي */
-  transition: all 0.3s ease-in-out;
-} 
