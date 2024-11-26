@@ -116,17 +116,15 @@ async function registerNewUser(telegramId) {
 
 // تحقق من إمكانية اللعب اليوم
 function checkDailyPlayAccess() {
-  const today = new Date().setHours(0, 0, 0, 0); // بداية اليوم
-  const lastPlay = new Date(gameState.lastPlayDate || 0).setHours(0, 0, 0, 0); // بداية آخر يوم لعب فيه المستخدم
+  const today = new Date().setHours(0, 0, 0, 0);
+  const lastPlay = new Date(gameState.lastPlayDate || 0).setHours(0, 0, 0, 0);
 
-  // إذا كان اليوم مختلف عن آخر يوم لعب فيه المستخدم
   if (today > lastPlay) {
-    uiElements.startButton.style.display = 'block'; // إظهار زر بدء اللعبة
-    uiElements.overlay.style.display = 'none'; // إخفاء التراكب
-    loadRemainingTimer();
+    uiElements.startButton.style.display = 'block';
+    uiElements.overlay.style.display = 'none';
   } else {
-    const timeRemaining = calculateTimeToNextDay(); // حساب الوقت المتبقي لليوم التالي
-    displayDailyTimer(timeRemaining); // عرض المؤقت
+    const timeRemaining = calculateTimeToNextDay();
+    displayDailyTimer(timeRemaining);
   }
 }
 
@@ -169,10 +167,6 @@ function startGame() {
 
   uiElements.startButton.style.display = 'none';
   uiElements.retryButton.style.display = 'none';
-
-  // تحديث قاعدة البيانات مع تاريخ اللعب الحالي
-  const currentDate = new Date();
-  updateLastPlayDate(currentDate);
 
   // تشغيل المؤقت
   const gameTimer = setInterval(() => {
@@ -231,7 +225,7 @@ function createRandomItem() {
   item.style.position = 'absolute';
 
   const img = document.createElement('img');
-  img.src = 'i/ccccc.jpg'; // ضع مسار الصورة هنا
+  img.src ='i/ccccc.jpg'; // ضع مسار الصورة هنا
   img.style.width = '100%';
   img.style.height = '100%';
   img.style.position = 'absolute';
@@ -265,7 +259,10 @@ function updateUI() {
 uiElements.startButton.addEventListener('click', startGame);
 
 // تحميل البيانات عند فتح الصفحة
-window.onload = () => {
-  fetchUserDataFromTelegram();
-  checkDailyPlayAccess();
-};
+window.onload = fetchUserDataFromTelegram;
+
+// تفعيل وضع ملء الشاشة
+Telegram.WebApp.ready();
+Telegram.WebApp.expand();
+Telegram.WebApp.setBackgroundColor('#000000');
+Telegram.WebApp.setHeaderColor('#000000');
