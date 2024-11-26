@@ -219,7 +219,7 @@ function createRandomItem() {
   // تصميم العنصر
   item.style.width = '40px';
   item.style.height = '40px';
-  item.style.background = 'radial-gradient(circle, #FFD700, #FFA500)';
+  item.style.background = 'radial-gradient(circle, #fff, #1a1a1a)';
   item.style.borderRadius = '50%';
   item.style.position = 'absolute';
 
