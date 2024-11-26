@@ -223,11 +223,11 @@ function createRandomItem() {
 
   const img = document.createElement('img');
   img.src = 'i/ccc.png'; // ضع مسار الصورة هنا
-  img.style.width = '70%';
-  img.style.height = '70%';
+  img.style.width = '75%';
+  img.style.height = '75%';
   img.style.position = 'absolute';
   img.style.top = '20%';
-  img.style.left = '10%';
+  img.style.left = '20%';
 
   item.appendChild(img);
   document.body.appendChild(item);
